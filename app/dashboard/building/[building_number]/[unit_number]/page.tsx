@@ -4,10 +4,7 @@ import { cookies } from "next/headers";
 import type { Database } from "@/database.types";
 import PropertyDetail from "@/app/ui/dashboard/PropertyDetail";
 import Link from "next/link";
-
-export function fixOneToOne<T>(objectOrNull: T[]): T | null {
-  return (objectOrNull as T) || null;
-}
+import { type } from "os";
 
 export default async function Page({
   params: { building_number, unit_number },
@@ -36,13 +33,29 @@ export default async function Page({
   const prev_building_number: number = building_number - 1;
   const next_building_number: number = Number(building_number) + Number(1);
 
+  interface Dbresults {
+    id: string;
+    unit_number: number;
+    building_number: number;
+    leepa_owners: LeepaOwner;
+  }
+  interface LeepaOwner {
+    owner_name: string;
+    address1: string;
+    address2: string;
+    address3: string;
+    address4: string;
+    country: string;
+  }
+
   const { data: properties } = await supabase
     .from("properties")
     .select(
       `id, unit_number, building_number, leepa_owners(owner_name, address1, address2, address3, address4, country)`
     )
     .match({ building_number: building_number.toString() })
-    .order("unit_number", { ascending: true });
+    .order("unit_number", { ascending: true })
+    .returns<Dbresults[]>();
 
   if (properties === null || properties.length === 0)
     return <p>No propertys to show or not logged in.</p>;
@@ -103,8 +116,7 @@ export default async function Page({
               <Link
                 href={`/dashboard/building/${building_number}/${property.id}`}
               >
-                {property?.unit_number}{" "}
-                {fixOneToOne(property.leepa_owners)?.owner_name}{" "}
+                {property?.unit_number} {property.leepa_owners?.owner_name}{" "}
               </Link>
             </p>
           ))}

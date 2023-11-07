@@ -38,7 +38,7 @@ export default async function Page() {
       {Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD", // Change this
-      }).format(sale.sale_price)}
+      }).format(Number(sale.sale_price))}
     </p>
   ));
 }
