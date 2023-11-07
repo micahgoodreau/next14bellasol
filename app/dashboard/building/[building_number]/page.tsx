@@ -5,6 +5,10 @@ import type { Database } from "@/database.types";
 import PropertyDetail from "@/app/ui/dashboard/PropertyDetail";
 import Link from "next/link";
 
+export function fixOneToOne<T>(objectOrNull: T[]): T | null {
+  return (objectOrNull as T) || null;
+}
+
 export default async function Page({
   params: { building_number },
 }: {
@@ -99,7 +103,8 @@ export default async function Page({
               <Link
                 href={`/dashboard/building/${building_number}/${property.id}`}
               >
-                {property.unit_number} {property.leepa_owners?.owner_name}{" "}
+                {property.unit_number}{" "}
+                {fixOneToOne(property.leepa_owners)?.owner_name}{" "}
               </Link>
             </p>
           ))}

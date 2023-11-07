@@ -30,14 +30,17 @@ export default async function PropertyDetail(props: any) {
     .match({ id: props.property_id })
     .single();
 
-  console.log(properties);
-  console.log(props);
+  const { data: leepa_owners } = await supabase
+    .from("leepa_owners")
+    .select()
+    .match({ property_id: props.property_id })
+    .single();
 
   return (
     <>
       <div>
         <p>Property Detail for Unit {properties?.unit_number} </p>
-        <p>{properties?.leepa_owners.owner_name}</p>
+        <p>{leepa_owners?.owner_name}</p>
         {properties?.contacts.map((contact) => (
           <p key={contact.id}>
             {contact.first_name} {contact.last_name}
