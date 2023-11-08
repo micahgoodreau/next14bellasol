@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import type { Database } from "@/database.types";
+import Link from "next/link";
 
 export default async function Page() {
   const cookieStore = cookies();
@@ -23,22 +24,59 @@ export default async function Page() {
     }
   );
 
+  interface Dbresults {
+    id: string;
+    unit_number: string;
+    sale_date: string;
+    sale_price: number;
+    property_id: string;
+    building_number: string;
+    leepa_owners: LeepaOwner;
+  }
+  interface LeepaOwner {
+    owner_name: string;
+    address1: string;
+    address2: string;
+    address3: string;
+    address4: string;
+    country: string;
+  }
+
   const { data: leepa_sales } = await supabase
     .from("leepa_sales")
-    .select()
+    .select(
+      `id, sale_date, sale_price, unit_number, property_id, building_number, leepa_owners(owner_name, address1)`
+    )
     .order("sale_date", { ascending: false })
-    .limit(25);
+    .limit(25)
+    .returns<Dbresults[]>();
 
   if (leepa_sales === null || leepa_sales.length === 0)
     return <p>No sales to show or not logged in.</p>;
 
-  return leepa_sales.map((sale) => (
-    <p key={sale.id} className="py-2 border-b">
-      {sale.sale_date} {sale.unit_number}{" "}
-      {Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD", // Change this
-      }).format(Number(sale.sale_price))}
-    </p>
-  ));
+  return (
+    <table>
+      <tbody>
+        {leepa_sales.map((sale) => (
+          <tr className="border-b">
+            <Link
+              href={`/dashboard/building/${sale.building_number}/${sale.property_id}`}
+            >
+              <td className="p-2">{sale.sale_date}</td>
+              <td className="p-2">{sale.unit_number}</td>
+              <td className="p-2">
+                {Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD", // Change this
+                }).format(Number(sale.sale_price))}
+              </td>
+              <td className="p-2">
+                {sale.leepa_owners.owner_name} {sale.leepa_owners.address1}
+              </td>
+            </Link>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
 }

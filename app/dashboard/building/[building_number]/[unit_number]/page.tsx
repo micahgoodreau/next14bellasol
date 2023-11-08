@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import type { Database } from "@/database.types";
 import PropertyDetail from "@/app/ui/dashboard/PropertyDetail";
 import Link from "next/link";
-import { type } from "os";
 
 export default async function Page({
   params: { building_number, unit_number },
