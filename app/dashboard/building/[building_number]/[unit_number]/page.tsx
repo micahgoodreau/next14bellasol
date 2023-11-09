@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import type { Database } from "@/database.types";
 import PropertyDetail from "@/app/ui/dashboard/PropertyDetail";
 import Link from "next/link";
+import GoToUnitButton from "@/components/GoToUnit";
 
 export default async function Page({
   params: { building_number, unit_number },
@@ -63,7 +64,7 @@ export default async function Page({
     <>
       <div className="grid grid-cols-2 gap-2 h-screen p-2">
         <div className="">
-          <div className="grid grid-cols-2 gap-2 h-20 p-2">
+          <div className="grid grid-cols-3 gap-2 h-20 p-2">
             <div>
               <Link
                 href={`/dashboard/building/${prev_building_number}/${unit_number}`}
@@ -86,6 +87,7 @@ export default async function Page({
                 Previous Building
               </Link>
             </div>
+            <GoToUnitButton />
             <div>
               <Link
                 href={`/dashboard/building/${next_building_number}/${unit_number}`}

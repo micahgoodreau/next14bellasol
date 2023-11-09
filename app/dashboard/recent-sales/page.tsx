@@ -3,6 +3,15 @@ import { cookies } from "next/headers";
 
 import type { Database } from "@/database.types";
 import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default async function Page() {
   const cookieStore = cookies();
@@ -55,28 +64,54 @@ export default async function Page() {
     return <p>No sales to show or not logged in.</p>;
 
   return (
-    <table>
-      <tbody>
+    <Table>
+      <TableCaption>A list of your recent invoices.</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[100px]">Date</TableHead>
+          <TableHead className="text-right">Unit</TableHead>
+          <TableHead className="text-right">Sale Amount</TableHead>
+          <TableHead>Lee PA Owner</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {leepa_sales.map((sale) => (
-          <tr className="border-b">
-            <Link
-              href={`/dashboard/building/${sale.building_number}/${sale.property_id}`}
-            >
-              <td className="p-2">{sale.sale_date}</td>
-              <td className="p-2">{sale.unit_number}</td>
-              <td className="p-2">
+          <TableRow>
+            <TableCell>
+              {" "}
+              <Link
+                href={`/dashboard/building/${sale.building_number}/${sale.property_id}`}
+              >
+                {sale.sale_date}
+              </Link>
+            </TableCell>
+            <TableCell className="text-right">
+              <Link
+                href={`/dashboard/building/${sale.building_number}/${sale.property_id}`}
+              >
+                {sale.unit_number}
+              </Link>
+            </TableCell>
+            <TableCell className="text-right">
+              <Link
+                href={`/dashboard/building/${sale.building_number}/${sale.property_id}`}
+              >
                 {Intl.NumberFormat("en-US", {
                   style: "currency",
                   currency: "USD", // Change this
                 }).format(Number(sale.sale_price))}
-              </td>
-              <td className="p-2">
+              </Link>
+            </TableCell>
+            <TableCell>
+              <Link
+                href={`/dashboard/building/${sale.building_number}/${sale.property_id}`}
+              >
                 {sale.leepa_owners.owner_name} {sale.leepa_owners.address1}
-              </td>
-            </Link>
-          </tr>
+              </Link>
+            </TableCell>
+          </TableRow>
         ))}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 }
