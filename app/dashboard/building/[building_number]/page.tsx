@@ -1,9 +1,10 @@
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
 import type { Database } from "@/database.types";
 import Link from "next/link";
 import GoToUnitButton from "@/components/GoToUnit";
+import { redirect } from "next/navigation";
 
 export default async function Page({
   params: { building_number },
@@ -11,23 +12,7 @@ export default async function Page({
   params: { building_number: number };
 }) {
   const cookieStore = cookies();
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name, value, options) {
-          cookieStore?.set({ name, value, ...options });
-        },
-        remove(name, options) {
-          cookieStore?.delete({ name, ...options });
-        },
-      },
-    }
-  );
+  const supabase = createClient(cookieStore);
 
   const prev_building_number: number = building_number - 1;
   const next_building_number: number = Number(building_number) + Number(1);
@@ -56,8 +41,7 @@ export default async function Page({
     .order("unit_number", { ascending: true })
     .returns<Dbresults[]>();
 
-  if (properties === null || properties.length === 0)
-    return <p>No propertys to show or not logged in.</p>;
+  if (properties === null || properties.length === 0) return redirect("/login");
 
   return (
     <>

@@ -1,3 +1,4 @@
+import AddContact from "@/components/AddContact";
 import {
   Table,
   TableBody,
@@ -8,28 +9,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Database } from "@/database.types";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 
 export default async function PropertyDetail(props: any) {
   const cookieStore = cookies();
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name, value, options) {
-          cookieStore?.set({ name, value, ...options });
-        },
-        remove(name, options) {
-          cookieStore?.delete({ name, ...options });
-        },
-      },
-    }
-  );
+  const supabase = createClient(cookieStore);
 
   const { data: properties } = await supabase
     .from("properties")
@@ -94,7 +79,7 @@ export default async function PropertyDetail(props: any) {
               </TableHeader>
               <TableBody>
                 {leepa_sales?.map((sale) => (
-                  <TableRow>
+                  <TableRow key={sale.id}>
                     <TableCell> {sale.sale_date}</TableCell>
                     <TableCell>
                       {Intl.NumberFormat("en-US", {
