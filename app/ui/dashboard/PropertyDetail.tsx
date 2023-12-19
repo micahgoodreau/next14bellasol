@@ -11,6 +11,7 @@ import {
 import { Database } from "@/database.types";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
+import Link from "next/link";
 
 export default async function PropertyDetail(props: any) {
   const cookieStore = cookies();
@@ -19,7 +20,7 @@ export default async function PropertyDetail(props: any) {
   const { data: properties } = await supabase
     .from("properties")
     .select(
-      `id, unit_number, building_number, contacts(id, first_name, last_name, contact_type, phone_numbers(id, phone_number, phone_type)), leepa_owners(owner_name, address1, address2, address3, address4, country)`
+      `id, unit_number, folio, building_number, contacts(id, first_name, last_name, contact_type, phone_numbers(id, phone_number, phone_type)), leepa_owners(owner_name, address1, address2, address3, address4, country)`
     )
     .match({ id: props.property_id })
     .single();
@@ -53,6 +54,11 @@ export default async function PropertyDetail(props: any) {
             <p>{leepa_owners?.address3}</p>
             <p>{leepa_owners?.address4}</p>
             <p>{leepa_owners?.country}</p>
+            <Link
+              href={`https://www.leepa.org/Display/DisplayParcel.aspx?FolioID=${properties?.folio}`}
+            >
+              View on LeePA
+            </Link>
           </div>
           <div className="border-b border-black mb-2">
             <p>Contacts:</p>
@@ -68,6 +74,7 @@ export default async function PropertyDetail(props: any) {
                 </p>
               </div>
             ))}
+            <AddContact property_id={props.property_id} />
           </div>
           <div>
             <Table>
