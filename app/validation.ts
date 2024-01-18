@@ -11,3 +11,9 @@ export const addPhoneNumberFormSchema = zfd.formData({
   phone_number: zfd.text(z.string().min(2, "Too short").max(20, "Too long")),
   phone_type: zfd.text(z.string().min(2, "Too short").max(20, "Too long")),
 });
+
+export const addLeaseFormSchema = zfd.formData({
+  property_id: zfd.text(),
+  start_date: zfd.text(z.string().min(2, "Too short").max(20, "Too long")),
+  end_date: zfd.text(z.string().min(2, "Too short").max(20, "Too long")),
+});

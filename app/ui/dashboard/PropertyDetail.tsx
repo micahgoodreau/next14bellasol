@@ -16,8 +16,8 @@ import { redirect } from "next/navigation";
 import { AddEmailAddressForm } from "./add-email-address-form";
 import { AddPhoneNumberForm } from "./add-phone-number-form";
 import { revalidatePath } from "next/cache";
-import { BeakerIcon } from "@heroicons/react/24/solid";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { AddLeaseForm } from "./add-lease-form";
 
 export default async function PropertyDetail(props: any) {
   const cookieStore = cookies();
@@ -80,7 +80,7 @@ export default async function PropertyDetail(props: any) {
   const { data: properties } = await supabase
     .from("properties")
     .select(
-      `id, unit_number, folio, building_number, contacts(id, first_name, last_name, contact_type, phone_numbers(id, phone_number, phone_type), email_addresses(id, email_address))`
+      `id, unit_number, folio, building_number, leases(id, start_date, end_date, lease_notes, contacts(id, first_name, last_name)), contacts(id, first_name, last_name, contact_type, phone_numbers(id, phone_number, phone_type), email_addresses(id, email_address))`
     )
     .match({ id: props.property_id })
     .single();
@@ -90,6 +90,13 @@ export default async function PropertyDetail(props: any) {
     .select()
     .match({ property_id: props.property_id })
     .single();
+
+  const { data: leases } = await supabase
+    .from("leases")
+    .select(
+      `id, start_date, end_date, lease_notes, contacts(id, first_name, last_name)`
+    )
+    .match({ property_id: props.property_id });
 
   const { data: leepa_sales } = await supabase
     .from("leepa_sales")
@@ -106,30 +113,52 @@ export default async function PropertyDetail(props: any) {
             Property Detail for Unit {properties?.unit_number}
           </h3>
         </div>
-        <div className="truncate rounded-xl bg-gray-300 px-4 py-8 text-blue-800 text-left">
+        <div className="truncate rounded-xl bg-gray-500 px-4 py-8 text-white text-left">
           <div className="border-b border-black mb-2">
-            <p>{leepa_owners?.owner_name}</p>
-            <p>{leepa_owners?.address1}</p>
-            <p>{leepa_owners?.address2}</p>
-            <p>{leepa_owners?.address3}</p>
-            <p>{leepa_owners?.address4}</p>
-            <p>{leepa_owners?.country}</p>
-            <Link
-              href={`https://www.leepa.org/Display/DisplayParcel.aspx?FolioID=${properties?.folio}`}
-            >
-              View on LeePA
-            </Link>
+            <p className="w-full p-2 bg-gray-700 text-white rounded-sm">
+              LeePA Info:
+            </p>
+            <div className="p-3">
+              <p>{leepa_owners?.owner_name}</p>
+              <p>{leepa_owners?.address1}</p>
+              <p>{leepa_owners?.address2}</p>
+              <p>{leepa_owners?.address3}</p>
+              <p>{leepa_owners?.address4}</p>
+              <p>{leepa_owners?.country}</p>
+            </div>
+            <div className="w-full flex flex-col-2">
+              <div>
+                <span className="">
+                  LeePA data last updated:{" "}
+                  {leepa_owners?.updated_at.slice(0, 10)}
+                </span>
+              </div>
+              <div className="text-right w-full">
+                <span>
+                  <Link
+                    href={`https://www.leepa.org/Display/DisplayParcel.aspx?FolioID=${properties?.folio}`}
+                  >
+                    View on LeePA
+                  </Link>
+                </span>
+              </div>
+            </div>
           </div>
           <div className="border-b border-black mb-2">
-            <p>Contacts:</p>
+            <p className="w-full p-2 bg-gray-700 text-white rounded-sm">
+              Contacts:
+            </p>
             {properties?.contacts.map((contact) => (
-              <div className="mb-2 border-b border-black" key={contact.id}>
-                <p>
+              <div
+                className="mb-2 border-b border-black bg-gray-500"
+                key={contact.id}
+              >
+                <p className="text-lg">
                   <span>{contact.contact_type}: </span>
                   {contact.first_name} {contact.last_name}{" "}
                 </p>
                 {contact?.phone_numbers?.map((phone) => (
-                  <div className="flex" key={phone.id}>
+                  <div className="ml-4 flex" key={phone.id}>
                     {phone.phone_number} {phone.phone_type}{" "}
                     <form action={deletePhoneNumber.bind(null, phone.id)}>
                       <button className="mr-4">
@@ -140,7 +169,7 @@ export default async function PropertyDetail(props: any) {
                 ))}
 
                 {contact?.email_addresses?.map((email) => (
-                  <div className="flex" key={email.id}>
+                  <div className="ml-4 flex" key={email.id}>
                     {email.email_address}
                     <form action={deleteEmail.bind(null, email.id)}>
                       <button className="mr-4">
@@ -155,9 +184,32 @@ export default async function PropertyDetail(props: any) {
                 </div>
               </div>
             ))}
-
+            <p className="w-full p-2 bg-gray-700 text-white rounded-sm">
+              Lease Info:
+            </p>
+            <AddLeaseForm property_id={props.property_id} />
+            {leases?.map((lease: any) => (
+              <div className="border-b border-black mb-2" key={lease.id}>
+                <div>
+                  <p>
+                    Start {lease.start_date} : End {lease.end_date}
+                  </p>
+                  <p>{lease.lease_notes}</p>
+                </div>
+                <div>
+                  <ul>
+                    {lease.contacts?.map((contact: any) => (
+                      <li key={contact.id}>
+                        {contact.first_name} {contact.last_name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
             <AddContact property_id={props.property_id} />
           </div>
+
           <div>
             <Table>
               <TableHeader>

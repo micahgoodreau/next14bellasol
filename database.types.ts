@@ -9,18 +9,6 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      _property_id: {
-        Row: {
-          id: string | null
-        }
-        Insert: {
-          id?: string | null
-        }
-        Update: {
-          id?: string | null
-        }
-        Relationships: []
-      }
       contacts: {
         Row: {
           active: boolean | null
@@ -122,6 +110,87 @@ export interface Database {
           }
         ]
       }
+      lease_contact: {
+        Row: {
+          contact_id: string
+          created_at: string
+          lease_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          lease_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          lease_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lease_contact_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lease_contact_lease_id_fkey"
+            columns: ["lease_id"]
+            isOneToOne: false
+            referencedRelation: "leases"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      leases: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          id: string
+          lease_notes: string | null
+          property_id: string | null
+          start_date: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          lease_notes?: string | null
+          property_id?: string | null
+          start_date?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          lease_notes?: string | null
+          property_id?: string | null
+          start_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leases_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leases_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       leepa_owners: {
         Row: {
           address1: string | null
@@ -131,8 +200,10 @@ export interface Database {
           country: string | null
           created_at: string
           created_by: string | null
+          folio: string | null
           owner_name: string | null
           property_id: string
+          strap: string | null
           unit_number: number | null
           updated_at: string | null
           updated_by: string | null
@@ -145,8 +216,10 @@ export interface Database {
           country?: string | null
           created_at?: string
           created_by?: string | null
+          folio?: string | null
           owner_name?: string | null
           property_id: string
+          strap?: string | null
           unit_number?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -159,8 +232,10 @@ export interface Database {
           country?: string | null
           created_at?: string
           created_by?: string | null
+          folio?: string | null
           owner_name?: string | null
           property_id?: string
+          strap?: string | null
           unit_number?: number | null
           updated_at?: string | null
           updated_by?: string | null
@@ -177,6 +252,7 @@ export interface Database {
       }
       leepa_sales: {
         Row: {
+          building_number: number | null
           column4: string
           column5: string | null
           column6: string | null
@@ -189,6 +265,7 @@ export interface Database {
           unit_number: number | null
         }
         Insert: {
+          building_number?: number | null
           column4?: string
           column5?: string | null
           column6?: string | null
@@ -201,6 +278,7 @@ export interface Database {
           unit_number?: number | null
         }
         Update: {
+          building_number?: number | null
           column4?: string
           column5?: string | null
           column6?: string | null
@@ -217,8 +295,8 @@ export interface Database {
             foreignKeyName: "leepa_sales_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
-            referencedRelation: "properties"
-            referencedColumns: ["id"]
+            referencedRelation: "leepa_owners"
+            referencedColumns: ["property_id"]
           }
         ]
       }
@@ -414,6 +492,14 @@ export interface Database {
         }
         Returns: string
       }
+      insert_email_address: {
+        Args: {
+          var_email_address: string
+          var_contact_id: string
+          var_created_by: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
@@ -423,3 +509,83 @@ export interface Database {
     }
   }
 }
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
+      Database["public"]["Views"])
+  ? (Database["public"]["Tables"] &
+      Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof Database["public"]["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
+  ? Database["public"]["Enums"][PublicEnumNameOrOptions]
+  : never
