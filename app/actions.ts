@@ -2,7 +2,7 @@
 
 
 import { ZodError } from "zod";
-import { addEmailAddressFormSchema, addLeaseFormSchema, addPhoneNumberFormSchema } from "./validation";
+import { addContactFormSchema, addEmailAddressFormSchema, addLeaseFormSchema, addPhoneNumberFormSchema } from "./validation";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
@@ -137,6 +137,58 @@ export type State =
       return {
         status: "success",
         message: `Lease added!`,
+      };
+    } catch (e) {
+      // In case of a ZodError (caused by our validation) we're adding issues to our response
+      if (e instanceof ZodError) {
+        return {
+          status: "error",
+          message: "Invalid form data",
+          errors: e.issues.map((issue) => ({
+            path: issue.path.join("."),
+            message: `Server validation: ${issue.message}`,
+          })),
+        };
+      }
+      return {
+        status: "error",
+        message: "Something went wrong. Please try again.",
+      };
+    }
+  }
+  export async function addContact(
+    prevState: State | null,
+    formdata: FormData,
+  ): Promise<State> {
+    try {
+      // Artificial delay; don't forget to remove that!
+      //await new Promise((resolve) => setTimeout(resolve, 1000));
+  
+      // Validate our data
+      const { first_name, last_name, business_name, contact_type, property_id } = addContactFormSchema.parse(formdata);
+      const cookieStore = cookies();
+      const supabase = createClient(cookieStore);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      //const var_created_by = user?.id;
+
+      const var_created_by = user?.id;
+      console.log(user, var_created_by);
+      const { data, error } = await supabase.rpc("insert_contact", {
+        var_first_name: first_name,
+        var_last_name: last_name,
+        var_business_name: business_name,
+        var_contact_type: contact_type,
+        var_property_id: property_id,
+        var_created_by,
+      });
+      console.log(data, error);
+      revalidatePath('/');
+      
+      return {
+        status: "success",
+        message: `Contact added!`,
       };
     } catch (e) {
       // In case of a ZodError (caused by our validation) we're adding issues to our response

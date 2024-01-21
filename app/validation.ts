@@ -17,3 +17,11 @@ export const addLeaseFormSchema = zfd.formData({
   start_date: zfd.text(z.string().min(2, "Too short").max(20, "Too long")),
   end_date: zfd.text(z.string().min(2, "Too short").max(20, "Too long")),
 });
+
+export const addContactFormSchema = zfd.formData({
+  property_id: zfd.text(),
+  first_name: zfd.text(z.string().min(2, "Too short").max(20, "Too long")),
+  last_name: zfd.text(z.string().min(2, "Too short").max(20, "Too long")),
+  business_name: zfd.text(),
+  contact_type: zfd.text(),
+});

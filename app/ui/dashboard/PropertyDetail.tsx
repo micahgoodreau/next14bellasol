@@ -18,6 +18,7 @@ import { AddPhoneNumberForm } from "./add-phone-number-form";
 import { revalidatePath } from "next/cache";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { AddLeaseForm } from "./add-lease-form";
+import { AddContactForm } from "./add-contact-form";
 
 export default async function PropertyDetail(props: any) {
   const cookieStore = cookies();
@@ -80,7 +81,7 @@ export default async function PropertyDetail(props: any) {
   const { data: properties } = await supabase
     .from("properties")
     .select(
-      `id, unit_number, folio, building_number, leases(id, start_date, end_date, lease_notes, contacts(id, first_name, last_name)), contacts(id, first_name, last_name, contact_type, phone_numbers(id, phone_number, phone_type), email_addresses(id, email_address))`
+      `id, unit_number, folio, building_number, street_address_1, association_number, leases(id, start_date, end_date, lease_notes, contacts(id, first_name, last_name)), contacts(id, first_name, last_name, contact_type, phone_numbers(id, phone_number, phone_type), email_addresses(id, email_address))`
     )
     .match({ id: props.property_id })
     .single();
@@ -109,12 +110,21 @@ export default async function PropertyDetail(props: any) {
       <div className="rounded-xl bg-gray-700 p-2 shadow-sm">
         <div className="flex p-4">
           {/*Icon ? <Icon className="h-5 w-5 text-gray-700" /> : null */}
-          <h3 className="ml-2 text-sm font-medium">
+          <h3 className="ml-2 text-sm text-white font-medium">
             Property Detail for Unit {properties?.unit_number}
           </h3>
         </div>
         <div className="truncate rounded-xl bg-gray-500 px-4 py-8 text-white text-left">
           <div className="border-b border-black mb-2">
+            <p className="w-full p-2 bg-gray-700 text-white rounded-sm">
+              Unit Info:
+            </p>
+            <div className="p-3">
+              <p>Unit Number: {properties?.unit_number}</p>
+              <p>Postal Address: {properties?.street_address_1}</p>
+              <p>Building Number: {properties?.building_number}</p>
+              <p>Association Number: {properties?.association_number}</p>
+            </div>
             <p className="w-full p-2 bg-gray-700 text-white rounded-sm">
               LeePA Info:
             </p>
@@ -207,10 +217,13 @@ export default async function PropertyDetail(props: any) {
                 </div>
               </div>
             ))}
-            <AddContact property_id={props.property_id} />
+            <AddContactForm property_id={props.property_id} />
           </div>
 
-          <div>
+          <div className="border-b border-black mb-2">
+            <p className="w-full p-2 bg-gray-700 text-white rounded-sm">
+              LeePA Sales History:
+            </p>
             <Table>
               <TableHeader>
                 <TableRow>
