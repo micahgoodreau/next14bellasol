@@ -19,6 +19,7 @@ import { revalidatePath } from "next/cache";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { AddLeaseForm } from "./add-lease-form";
 import { AddContactForm } from "./add-contact-form";
+import { AddEmailForm2 } from "./add-email-address-form2";
 
 export default async function PropertyDetail(props: any) {
   const cookieStore = cookies();
@@ -189,6 +190,7 @@ export default async function PropertyDetail(props: any) {
                   </div>
                 ))}
                 <div className="p-2">
+                  <AddEmailForm2 />
                   <AddEmailAddressForm contact_id={contact.id} />
                   <AddPhoneNumberForm contact_id={contact.id} />
                 </div>
